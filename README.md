@@ -87,6 +87,10 @@ Both options are rows in `/config`. You can also set them in `settings.json` und
 
 Pictures are sized from the PNG and the transcript width, and take at most 60% of the screen's rows. Claude Code reports no pixel size for a terminal cell, so the mod assumes a cell is about 8 by 17 pixels.
 
+## License
+
+MIT. See [LICENSE](LICENSE).
+
 ## Develop
 
 ```sh
