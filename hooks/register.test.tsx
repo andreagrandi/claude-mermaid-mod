@@ -155,6 +155,7 @@ test('two identical blocks render once and both draw', async ($, on) => {
   })
   const twice = `${REPLY}\n\nAgain:\n\n${FENCE}`
   on('session.messages', () => ({ value: [{ role: 'assistant', text: twice, toolUses: [] }] }))
+  on('command.register', () => ({ value: { command: 'mermaid-source' } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
@@ -189,6 +190,7 @@ test('a renderer error leaves the source and logs at debug level', async ($, on)
     return { value: undefined }
   })
   on('session.messages', () => ({ value: [{ role: 'assistant', text: REPLY, toolUses: [] }] }))
+  on('command.register', () => ({ value: { command: 'mermaid-source' } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
@@ -198,4 +200,22 @@ test('a renderer error leaves the source and logs at debug level', async ($, on)
   const ui = await $.ui.mount(message(REPLY))
   expect(await drawnInOrder(ui)).toEqual([`Text: engine: ${REPLY}`])
   await ui.unmount()
+})
+
+test('/mermaid-source switches a ready diagram back to source and back', async ($, on) => {
+  engineDraws(on)
+  seed(on, { [KEY]: { status: 'ready', file: PNG, width: 400, height: 200 } })
+  const run = { command: 'mermaid-source', args: '', origin: { kind: 'user' }, presentation: {} } as never
+
+  const first = await $.command.run(run)
+  expect(first).toMatchObject({ text: 'Mermaid blocks show their source.' })
+  const ui = await $.ui.mount(message(REPLY))
+  expect(await drawnInOrder(ui)).toEqual([`Text: engine: ${REPLY}`])
+  await ui.unmount()
+
+  const second = await $.command.run(run)
+  expect(second).toMatchObject({ text: 'Mermaid blocks show as pictures.' })
+  const again = await $.ui.mount(message(REPLY))
+  expect(await again.findAll({ type: 'Image' })).toHaveLength(1)
+  await again.unmount()
 })

@@ -16,6 +16,7 @@ declare module 'claude-code' {
     'mermaid-pictures': {
       diagrams: Shaped<Record<string, Diagram>>
       setup: Shaped<Setup | null>
+      showSource: Shaped<boolean>
     }
   }
 }

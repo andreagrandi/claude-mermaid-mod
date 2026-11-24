@@ -85,6 +85,8 @@ Both options are rows in `/config`. You can also set them in `settings.json` und
 3. When a reply block holds a diagram with a PNG ready, the mod draws the picture in its place. Claude Code draws the prose around it as usual.
 4. A diagram still rendering, or one that failed, shows as source. Render errors go to the debug log, `claude --debug`.
 
+To copy a diagram's source, run `/mermaid-source`. Every Mermaid block then shows its source until you run the command again. ctrl+o can't do this, because Claude Code doesn't tell the mod when a reply is drawn in the ctrl+o view.
+
 Pictures are sized from the PNG and the transcript width, and take at most 60% of the screen's rows. Claude Code reports no pixel size for a terminal cell, so the mod assumes a cell is about 8 by 17 pixels.
 
 ## License

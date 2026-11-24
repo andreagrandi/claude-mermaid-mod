@@ -15,6 +15,9 @@ const diagrams = atom(
 const setup = atom({ plugin: 'mermaid-pictures', key: 'setup' } as const, null as Setup | null, {
   shape: 'setup-1',
 })
+const showSource = atom({ plugin: 'mermaid-pictures', key: 'showSource' } as const, false, {
+  shape: 'show-source-1',
+})
 
 const CACHE_LIMIT = 100
 const RENDER_TIMEOUT_MS = 10_000
@@ -179,6 +182,14 @@ export const register: Register = (on, given) => {
   on('session.start', async ($, e, next) => {
     const result = await next(e)
     try {
+      await $.command.register({
+        name: 'mermaid-source',
+        description: 'Switch Mermaid blocks between pictures and their source',
+      })
+    } catch (error) {
+      log($, `could not register /mermaid-source: ${String(error)}`)
+    }
+    try {
       context = await prepare($)
       // A resumed session gets its pictures too.
       scanLater($)
@@ -187,6 +198,12 @@ export const register: Register = (on, given) => {
     }
 
     return result
+  })
+
+  on('command.run', { command: 'mermaid-source' }, async $ => {
+    const isSource = await update($, showSource, shown => !shown)
+
+    return { text: isSource ? 'Mermaid blocks show their source.' : 'Mermaid blocks show as pictures.' }
   })
 
   on('turn.complete', async ($, e, next) => {
@@ -199,6 +216,8 @@ export const register: Register = (on, given) => {
     if (e.surface !== 'terminal' || !e.props.text.includes('mermaid')) return next(e)
     const settings = await read($, setup)
     if (settings === null || !settings.canDraw) return next(e)
+    // Claude Code tells a reply no ctrl+o state, so a command switches pictures off to copy the source.
+    if (await read($, showSource)) return next(e)
     const segments = splitFences(e.props.text)
     const map = await read($, diagrams)
     const isReady = (source: string) => map[diagramKey(settings.theme, source)]?.status === 'ready'
