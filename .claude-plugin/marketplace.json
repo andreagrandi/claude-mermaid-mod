@@ -1,0 +1,5 @@
+{
+  "name": "claude-mermaid-mod",
+  "owner": { "name": "andreagrandi" },
+  "plugins": [{ "name": "mermaid-pictures", "source": "./" }]
+}

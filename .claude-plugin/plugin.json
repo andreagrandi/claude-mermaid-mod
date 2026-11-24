@@ -1,0 +1,21 @@
+{
+  "name": "mermaid-pictures",
+  "version": "0.1.0",
+  "description": "Draws the Mermaid blocks of an assistant reply as pictures in the transcript",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "renderer": {
+      "type": "string",
+      "title": "Mermaid renderer",
+      "description": "mmdr renders without a browser. mmdc is the mermaid-cli fallback and starts Chromium for each diagram.",
+      "options": ["mmdr", "mmdc"],
+      "default": "mmdr"
+    },
+    "rendererPath": {
+      "type": "string",
+      "title": "Renderer path",
+      "description": "Absolute path of the renderer binary. Empty looks the renderer up on PATH, then in ~/.cargo/bin.",
+      "default": ""
+    }
+  }
+}
