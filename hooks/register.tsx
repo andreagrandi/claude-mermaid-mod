@@ -18,11 +18,18 @@ const setup = atom({ plugin: 'mermaid-pictures', key: 'setup' } as const, null a
 const showSource = atom({ plugin: 'mermaid-pictures', key: 'showSource' } as const, false, {
   shape: 'show-source-1',
 })
+// Keys of the diagrams drawn at full width instead of their small size.
+const enlarged = atom({ plugin: 'mermaid-pictures', key: 'enlarged' } as const, [] as string[], {
+  shape: 'enlarged-1',
+})
+const RESIZE_PREFIX = 'resize:'
 
 const CACHE_LIMIT = 100
 const RENDER_TIMEOUT_MS = 10_000
 // Share of the screen's rows one picture may take.
-const MAX_ROW_SHARE = 0.6
+const MAX_ROW_SHARE = 0.9
+// An enlarged picture may scroll past the screen, up to the Image limit.
+const ENLARGED_ROWS = 255
 // The reply's text is indented past the bullet; the picture lines up with it.
 const INDENT = 2
 
@@ -206,6 +213,16 @@ export const register: Register = (on, given) => {
     return { text: isSource ? 'Mermaid blocks show their source.' : 'Mermaid blocks show as pictures.' }
   })
 
+  // The render hook may not write state, so the enlarge button toggles here.
+  on('ui.press', async ($, e, next) => {
+    if (e.element.startsWith(RESIZE_PREFIX)) {
+      const key = e.element.slice(RESIZE_PREFIX.length).split(':')[0] ?? ''
+      await update($, enlarged, keys => (keys.includes(key) ? keys.filter(k => k !== key) : [...keys, key]))
+    }
+
+    return next(e)
+  })
+
   on('turn.complete', async ($, e, next) => {
     if (e.agentId === undefined) scanLater($)
 
@@ -223,17 +240,24 @@ export const register: Register = (on, given) => {
     const isReady = (source: string) => map[diagramKey(settings.theme, source)]?.status === 'ready'
     if (!segments.some(s => s.kind === 'diagram' && isReady(s.source))) return next(e)
 
-    const { Box, Image } = $.ui.resolve(e)
+    const large = await read($, enlarged)
+    const { Box, Button, Image } = $.ui.resolve(e)
     const maxColumns = (e.viewport?.columns ?? 80) - INDENT * 2
     const maxRows = (e.viewport?.rows ?? 40) * MAX_ROW_SHARE
     const parts = []
     let isFirst = e.props.isFirstOfReply
     for (const [index, segment] of segments.entries()) {
-      const diagram = segment.kind === 'diagram' ? map[diagramKey(settings.theme, segment.source)] : undefined
+      const key = segment.kind === 'diagram' ? diagramKey(settings.theme, segment.source) : ''
+      const diagram = segment.kind === 'diagram' ? map[key] : undefined
       if (segment.kind === 'diagram' && diagram?.status === 'ready') {
-        const box = pictureBox(diagram.width, diagram.height, maxColumns, maxRows)
+        const small = pictureBox(diagram.width, diagram.height, maxColumns, maxRows)
+        const big = pictureBox(diagram.width, diagram.height, maxColumns, ENLARGED_ROWS)
+        const isLarge = large.includes(key)
+        const box = isLarge ? big : small
+        // A picture that already fits at its full size needs no button.
+        const canResize = big.columns !== small.columns || big.rows !== small.rows
         parts.push(
-          <Box paddingLeft={INDENT} marginBottom={1}>
+          <Box flexDirection="column" paddingLeft={INDENT} marginBottom={1}>
             <Image
               key={`diagram-${index}`}
               source={{ file: diagram.file, format: 'png' }}
@@ -241,6 +265,13 @@ export const register: Register = (on, given) => {
               rows={box.rows}
               alt={segment.raw}
             />
+            {canResize ? (
+              <Box>
+                <Button key={`${RESIZE_PREFIX}${key}:${index}`} dimColor onPress={() => undefined}>
+                  {isLarge ? 'shrink' : 'enlarge'}
+                </Button>
+              </Box>
+            ) : null}
           </Box>,
         )
         continue
