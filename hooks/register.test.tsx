@@ -222,12 +222,12 @@ test('/mermaid-source switches a ready diagram back to source and back', async (
 
 test('the enlarge button grows a tall diagram and shrink brings it back', async ($, on) => {
   engineDraws(on)
-  // 400 by 2000 pixels is 50 columns and 118 rows at full size, past 60% of 40 rows.
+  // 400 by 2000 pixels is 50 columns and 118 rows at full size, past 90% of 40 rows.
   seed(on, { [KEY]: { status: 'ready', file: PNG, width: 400, height: 2000 } })
   const button = `resize:${KEY}:1`
 
   const ui = await $.ui.mount(message(REPLY))
-  expect((await ui.find({ type: 'Image' }))?.props.rows).toBe(24)
+  expect((await ui.find({ type: 'Image' }))?.props.rows).toBe(36)
   expect((await ui.find({ key: button }))?.text).toBe('enlarge')
   await ui.press({ key: button })
   await ui.unmount()
@@ -241,7 +241,7 @@ test('the enlarge button grows a tall diagram and shrink brings it back', async 
   await large.unmount()
 
   const again = await $.ui.mount(message(REPLY))
-  expect((await again.find({ type: 'Image' }))?.props.rows).toBe(24)
+  expect((await again.find({ type: 'Image' }))?.props.rows).toBe(36)
   await again.unmount()
 })
 

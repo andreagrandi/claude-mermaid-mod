@@ -27,7 +27,7 @@ const RESIZE_PREFIX = 'resize:'
 const CACHE_LIMIT = 100
 const RENDER_TIMEOUT_MS = 10_000
 // Share of the screen's rows one picture may take.
-const MAX_ROW_SHARE = 0.6
+const MAX_ROW_SHARE = 0.9
 // An enlarged picture may scroll past the screen, up to the Image limit.
 const ENLARGED_ROWS = 255
 // The reply's text is indented past the bullet; the picture lines up with it.
