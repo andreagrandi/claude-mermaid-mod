@@ -17,6 +17,7 @@ declare module 'claude-code' {
       diagrams: Shaped<Record<string, Diagram>>
       setup: Shaped<Setup | null>
       showSource: Shaped<boolean>
+      enlarged: Shaped<string[]>
     }
   }
 }

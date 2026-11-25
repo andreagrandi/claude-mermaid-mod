@@ -25,6 +25,8 @@ At the prompt of a Claude Code session:
 
 Diagrams turn into pictures when Claude's turn ends. A diagram still rendering, or one that failed, shows as source.
 
+A picture is capped at 60% of the screen's height. When that makes it smaller than its full size, an `enlarge` button sits under it. Click it to draw the picture as wide as the transcript, up to 255 rows, and click `shrink` to bring it back.
+
 To copy a diagram's source, run `/mermaid-source`. Mermaid blocks then show their source until you run it again. ctrl+o still shows the picture, because Claude Code doesn't tell the mod when a reply is drawn in the ctrl+o view.
 
 ## Options
